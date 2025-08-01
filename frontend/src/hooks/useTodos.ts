@@ -11,6 +11,7 @@ export const useTodos = () => {
   const [currentFilter, setCurrentFilter] = useState<FilterType>('all');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // 获取所有待办事项
   const fetchTodos = useCallback(async () => {
@@ -53,8 +54,10 @@ export const useTodos = () => {
     try {
       setIsLoading(true);
       setError(null);
+      setSuccessMessage(null);
       const newTodo = await todoApi.createTodo(data);
       setTodos(prev => [...prev, newTodo]);
+      setSuccessMessage(`成功添加待办事项: "${newTodo.title}"`);
       return { success: true, data: newTodo };
     } catch (err) {
       console.error('添加待办事项失败:', err);
@@ -158,6 +161,7 @@ export const useTodos = () => {
     currentFilter,
     isLoading,
     error,
+    successMessage,
     stats,
     
     // 操作
@@ -169,6 +173,7 @@ export const useTodos = () => {
     clearAll,
     setCurrentFilter,
     setError,
+    setSuccessMessage,
     fetchTodos,
   };
 };

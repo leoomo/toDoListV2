@@ -6,7 +6,7 @@ import TodoForm from '@/components/TodoForm';
 import TodoList from '@/components/TodoList';
 import TodoFilter from '@/components/TodoFilter';
 import LoadingOverlay from '@/components/LoadingOverlay';
-import ErrorAlert from '@/components/ErrorAlert';
+import Toast from '@/components/Toast';
 
 export default function Home() {
   const {
@@ -14,6 +14,7 @@ export default function Home() {
     currentFilter,
     isLoading,
     error,
+    successMessage,
     stats,
     addTodo,
     toggleComplete,
@@ -22,6 +23,7 @@ export default function Home() {
     clearAll,
     setCurrentFilter,
     setError,
+    setSuccessMessage,
   } = useTodos();
 
   return (
@@ -37,8 +39,22 @@ export default function Home() {
           </p>
         </div>
 
+        {/* 成功提示 */}
+        <Toast 
+          message={successMessage} 
+          type="success" 
+          onDismiss={() => setSuccessMessage(null)}
+          autoClose={true}
+          duration={3000}
+        />
+
         {/* 错误提示 */}
-        <ErrorAlert error={error} onDismiss={() => setError(null)} />
+        <Toast 
+          message={error} 
+          type="error" 
+          onDismiss={() => setError(null)}
+          autoClose={false}
+        />
 
         {/* 添加表单 */}
         <TodoForm onAddTodo={addTodo} isLoading={isLoading} />
