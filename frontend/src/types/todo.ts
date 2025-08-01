@@ -1,3 +1,5 @@
+// 待办事项类型定义
+
 export interface Todo {
   id: number;
   title: string;
@@ -25,4 +27,10 @@ export interface TodoListResponse {
   offset: number;
 }
 
-export type FilterType = 'all' | 'active' | 'completed'; 
+export type FilterType = 'all' | 'active' | 'completed';
+
+export interface ApiResponse<T> {
+  data?: T;
+  error?: string;
+  success: boolean;
+}

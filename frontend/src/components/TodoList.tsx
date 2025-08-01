@@ -1,20 +1,22 @@
-import React from 'react';
-import { Todo } from '../types/todo';
+// 待办事项列表组件
+'use client';
+
+import type { Todo } from '@/types/todo';
 import TodoItem from './TodoItem';
 
 interface TodoListProps {
   todos: Todo[];
-  onToggleComplete: (id: number, completed: boolean) => void;
-  onDelete: (id: number) => void;
+  onToggleComplete: (id: number, completed: boolean) => Promise<{ success: boolean; error?: string }>;
+  onDelete: (id: number) => Promise<{ success: boolean; error?: string }>;
   isLoading?: boolean;
 }
 
-const TodoList: React.FC<TodoListProps> = ({ 
+export default function TodoList({ 
   todos, 
   onToggleComplete, 
   onDelete, 
   isLoading = false 
-}) => {
+}: TodoListProps) {
   if (todos.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-md p-8 text-center">
@@ -42,6 +44,4 @@ const TodoList: React.FC<TodoListProps> = ({
       ))}
     </div>
   );
-};
-
-export default TodoList; 
+}

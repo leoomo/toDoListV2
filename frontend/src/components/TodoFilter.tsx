@@ -1,31 +1,33 @@
-import React from 'react';
-import { FilterType } from '../types/todo';
+// 筛选和批量操作组件
+'use client';
+
+import type { FilterType } from '@/types/todo';
 
 interface TodoFilterProps {
   currentFilter: FilterType;
   onFilterChange: (filter: FilterType) => void;
-  onClearCompleted: () => void;
-  onClearAll: () => void;
-  totalCount: number;
-  completedCount: number;
-  activeCount: number;
+  onClearCompleted: () => Promise<{ success: boolean; error?: string }>;
+  onClearAll: () => Promise<{ success: boolean; error?: string }>;
+  stats: {
+    total: number;
+    completed: number;
+    active: number;
+  };
   isLoading?: boolean;
 }
 
-const TodoFilter: React.FC<TodoFilterProps> = ({
+export default function TodoFilter({
   currentFilter,
   onFilterChange,
   onClearCompleted,
   onClearAll,
-  totalCount,
-  completedCount,
-  activeCount,
+  stats,
   isLoading = false
-}) => {
+}: TodoFilterProps) {
   const filterButtons = [
-    { key: 'all' as FilterType, label: '全部', count: totalCount },
-    { key: 'active' as FilterType, label: '未完成', count: activeCount },
-    { key: 'completed' as FilterType, label: '已完成', count: completedCount }
+    { key: 'all' as FilterType, label: '全部', count: stats.total },
+    { key: 'active' as FilterType, label: '未完成', count: stats.active },
+    { key: 'completed' as FilterType, label: '已完成', count: stats.completed }
   ];
 
   return (
@@ -50,14 +52,14 @@ const TodoFilter: React.FC<TodoFilterProps> = ({
 
       {/* 统计信息 */}
       <div className="text-sm text-gray-600 mb-4">
-        总计: {totalCount} 项 | 已完成: {completedCount} 项 | 未完成: {activeCount} 项
+        总计: {stats.total} 项 | 已完成: {stats.completed} 项 | 未完成: {stats.active} 项
       </div>
 
       {/* 批量操作按钮 */}
       <div className="flex flex-wrap gap-3">
         <button
           onClick={onClearCompleted}
-          disabled={completedCount === 0 || isLoading}
+          disabled={stats.completed === 0 || isLoading}
           className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
         >
           清除已完成
@@ -65,7 +67,7 @@ const TodoFilter: React.FC<TodoFilterProps> = ({
         
         <button
           onClick={onClearAll}
-          disabled={totalCount === 0 || isLoading}
+          disabled={stats.total === 0 || isLoading}
           className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
         >
           清除全部
@@ -73,6 +75,4 @@ const TodoFilter: React.FC<TodoFilterProps> = ({
       </div>
     </div>
   );
-};
-
-export default TodoFilter; 
+}

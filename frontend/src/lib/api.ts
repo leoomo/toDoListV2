@@ -1,9 +1,10 @@
+// API 服务层
 import axios from 'axios';
-import { Todo, TodoCreate, TodoUpdate, TodoListResponse } from '../types/todo';
+import type { Todo, TodoCreate, TodoUpdate, TodoListResponse } from '@/types/todo';
 
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
 
-// 创建axios实例
+// 创建 axios 实例
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -77,6 +78,12 @@ export const todoApi = {
   deleteAll: async (): Promise<void> => {
     await api.delete('/todos/all');
   },
+
+  // 健康检查
+  healthCheck: async (): Promise<{ status: string; service: string }> => {
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/health`);
+    return response.data;
+  },
 };
 
-export default api; 
+export default api;

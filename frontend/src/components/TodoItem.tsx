@@ -1,19 +1,21 @@
-import React from 'react';
-import { Todo } from '../types/todo';
+// 待办事项卡片组件
+'use client';
+
+import type { Todo } from '@/types/todo';
 
 interface TodoItemProps {
   todo: Todo;
-  onToggleComplete: (id: number, completed: boolean) => void;
-  onDelete: (id: number) => void;
+  onToggleComplete: (id: number, completed: boolean) => Promise<{ success: boolean; error?: string }>;
+  onDelete: (id: number) => Promise<{ success: boolean; error?: string }>;
   isLoading?: boolean;
 }
 
-const TodoItem: React.FC<TodoItemProps> = ({ 
+export default function TodoItem({ 
   todo, 
   onToggleComplete, 
   onDelete, 
   isLoading = false 
-}) => {
+}: TodoItemProps) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('zh-CN', {
       year: 'numeric',
@@ -24,6 +26,18 @@ const TodoItem: React.FC<TodoItemProps> = ({
     });
   };
 
+  const handleToggle = () => {
+    if (!isLoading) {
+      onToggleComplete(todo.id, !todo.completed);
+    }
+  };
+
+  const handleDelete = () => {
+    if (!isLoading && window.confirm('确定要删除这个任务吗？')) {
+      onDelete(todo.id);
+    }
+  };
+
   return (
     <div className={`bg-white rounded-lg shadow-sm border p-4 mb-3 transition-all duration-200 hover:shadow-md ${
       todo.completed ? 'opacity-75' : ''
@@ -31,22 +45,24 @@ const TodoItem: React.FC<TodoItemProps> = ({
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex items-center mb-2">
+            {/* 复选框 */}
             <button
-              onClick={() => onToggleComplete(todo.id, !todo.completed)}
+              onClick={handleToggle}
               disabled={isLoading}
-              className={`flex-shrink-0 w-5 h-5 rounded-full border-2 mr-3 transition-colors ${
+              className={`flex-shrink-0 w-5 h-5 rounded-full border-2 mr-3 transition-colors flex items-center justify-center ${
                 todo.completed
                   ? 'bg-green-500 border-green-500 text-white'
                   : 'border-gray-300 hover:border-green-400'
               } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               {todo.completed && (
-                <svg className="w-3 h-3 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                 </svg>
               )}
             </button>
             
+            {/* 任务标题 */}
             <h3 className={`text-lg font-medium text-gray-900 truncate ${
               todo.completed ? 'line-through text-gray-500' : ''
             }`}>
@@ -54,6 +70,7 @@ const TodoItem: React.FC<TodoItemProps> = ({
             </h3>
           </div>
           
+          {/* 任务描述 */}
           {todo.description && (
             <p className={`text-gray-600 mb-3 ml-8 ${
               todo.completed ? 'line-through' : ''
@@ -62,6 +79,7 @@ const TodoItem: React.FC<TodoItemProps> = ({
             </p>
           )}
           
+          {/* 时间信息 */}
           <div className="text-xs text-gray-400 ml-8">
             创建时间: {formatDate(todo.created_at)}
             {todo.updated_at !== todo.created_at && (
@@ -70,9 +88,10 @@ const TodoItem: React.FC<TodoItemProps> = ({
           </div>
         </div>
         
+        {/* 删除按钮 */}
         <div className="flex items-center ml-4">
           <button
-            onClick={() => onDelete(todo.id)}
+            onClick={handleDelete}
             disabled={isLoading}
             className="text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="删除任务"
@@ -85,6 +104,4 @@ const TodoItem: React.FC<TodoItemProps> = ({
       </div>
     </div>
   );
-};
-
-export default TodoItem; 
+}
