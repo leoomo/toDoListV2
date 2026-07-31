@@ -13,6 +13,7 @@ from .schemas import TodoCreate, TodoUpdate
 async def get_todos(
     db: AsyncSession,
     completed: Optional[str] = None,
+    search: Optional[str] = None,
     limit: int = 50,
     offset: int = 0
 ) -> tuple[List[Todo], int]:
@@ -22,6 +23,7 @@ async def get_todos(
     Args:
         db: 数据库会话
         completed: 筛选条件 ('true', 'false', 'all')
+        search: 标题关键词
         limit: 限制数量
         offset: 偏移量
     
@@ -36,6 +38,15 @@ async def get_todos(
     elif completed == "false":
         query = query.where(Todo.completed == False)
     # completed == "all" 或 None 时不过滤
+
+    normalized_search = search.strip() if search else ""
+    if normalized_search:
+        escaped_search = (
+            normalized_search.replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        )
+        query = query.where(Todo.title.ilike(f"%{escaped_search}%", escape="\\"))
     
     # 获取总数
     count_query = select(func.count()).select_from(query.subquery())
@@ -165,4 +176,4 @@ async def delete_all_todos(db: AsyncSession) -> int:
     query = delete(Todo)
     result = await db.execute(query)
     await db.commit()
-    return result.rowcount 
+    return result.rowcount

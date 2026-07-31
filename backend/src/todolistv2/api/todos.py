@@ -21,6 +21,7 @@ async def read_todos(
     completed: Optional[Literal["true", "false", "all"]] = Query(
         None, description="筛选条件: true/false/all"
     ),
+    search: Optional[str] = Query(None, max_length=100, description="标题关键词"),
     limit: int = Query(50, ge=1, le=100, description="限制返回数量"),
     offset: int = Query(0, ge=0, description="偏移量"),
     db: AsyncSession = Depends(get_db)
@@ -29,10 +30,13 @@ async def read_todos(
     获取待办事项列表
     
     - **completed**: 筛选条件 ('true', 'false', 'all')
+    - **search**: 标题关键词（最多 100 个字符）
     - **limit**: 限制返回数量 (1-100)
     - **offset**: 偏移量
     """
-    todos, total = await get_todos(db, completed=completed, limit=limit, offset=offset)
+    todos, total = await get_todos(
+        db, completed=completed, search=search, limit=limit, offset=offset
+    )
     return TodoListResponse(
         items=[TodoResponse.model_validate(todo) for todo in todos],
         total=total,

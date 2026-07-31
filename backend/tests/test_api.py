@@ -204,6 +204,54 @@ async def test_read_todos_rejects_invalid_completed_filter(client: AsyncClient):
     assert response.status_code == 422
 
 
+async def test_read_todos_with_title_search(client: AsyncClient, db_session: AsyncSession):
+    """按标题关键词筛选待办事项，并支持与完成状态组合"""
+    todos = [
+        await create_todo(db_session, TodoCreate(title="写周报")),
+        await create_todo(db_session, TodoCreate(title="阅读报告")),
+        await create_todo(db_session, TodoCreate(title="买菜")),
+    ]
+    await client.put(f"/api/v1/todos/{todos[1].id}", json={"completed": True})
+
+    response = await client.get("/api/v1/todos/?search=报告")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 1
+    assert data["items"][0]["title"] == "阅读报告"
+
+    response = await client.get("/api/v1/todos/?search=报告&completed=false")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 0
+    assert data["items"] == []
+
+
+async def test_read_todos_search_is_case_insensitive_and_paginates(
+    client: AsyncClient, db_session: AsyncSession
+):
+    """标题搜索大小写不敏感，total 反映筛选后的总数"""
+    await create_todo(db_session, TodoCreate(title="Weekly Report"))
+    await create_todo(db_session, TodoCreate(title="Monthly Report"))
+    await create_todo(db_session, TodoCreate(title="Shopping"))
+
+    response = await client.get("/api/v1/todos/?search=report&limit=1")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 2
+    assert len(data["items"]) == 1
+    assert "Report" in data["items"][0]["title"]
+
+
+async def test_read_todos_rejects_overlong_search(client: AsyncClient):
+    """拒绝超过长度上限的标题搜索"""
+    response = await client.get(f"/api/v1/todos/?search={'a' * 101}")
+
+    assert response.status_code == 422
+
+
 
 async def test_read_todos_with_pagination(client: AsyncClient, db_session: AsyncSession):
     """测试分页功能"""
