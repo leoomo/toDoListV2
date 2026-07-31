@@ -176,6 +176,11 @@ async def test_read_todos_with_filter(client: AsyncClient, db_session: AsyncSess
     assert response.status_code == 200
     data = response.json()
     assert data["total"] == 4
+
+    response = await client.get("/api/v1/todos/?completed=all")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total"] == 4
     
     # 测试获取未完成的
     response = await client.get("/api/v1/todos/?completed=false")
@@ -190,6 +195,13 @@ async def test_read_todos_with_filter(client: AsyncClient, db_session: AsyncSess
     data = response.json()
     assert data["total"] == 2
     assert all(item["completed"] for item in data["items"])
+
+
+async def test_read_todos_rejects_invalid_completed_filter(client: AsyncClient):
+    """拒绝不在契约内的完成状态筛选值"""
+    response = await client.get("/api/v1/todos/?completed=done")
+
+    assert response.status_code == 422
 
 
 
@@ -286,4 +298,4 @@ async def test_health_check(client: AsyncClient):
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "healthy"
-    assert data["service"] == "TodoListV2 API" 
+    assert data["service"] == "TodoListV2 API"

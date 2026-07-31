@@ -4,7 +4,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Optional
+from typing import Literal, Optional
 from ..database import get_db
 from ..models import Todo
 from ..schemas import TodoCreate, TodoUpdate, TodoResponse, TodoListResponse
@@ -18,7 +18,9 @@ router = APIRouter(prefix="/todos", tags=["todos"])
 
 @router.get("/", response_model=TodoListResponse)
 async def read_todos(
-    completed: Optional[str] = Query(None, description="筛选条件: true/false/all"),
+    completed: Optional[Literal["true", "false", "all"]] = Query(
+        None, description="筛选条件: true/false/all"
+    ),
     limit: int = Query(50, ge=1, le=100, description="限制返回数量"),
     offset: int = Query(0, ge=0, description="偏移量"),
     db: AsyncSession = Depends(get_db)
@@ -96,4 +98,4 @@ async def delete_todo_item(todo_id: int, db: AsyncSession = Depends(get_db)):
     """
     success = await delete_todo(db, todo_id)
     if not success:
-        raise HTTPException(status_code=404, detail="待办事项不存在") 
+        raise HTTPException(status_code=404, detail="待办事项不存在")
